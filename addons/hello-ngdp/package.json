@@ -1,0 +1,14 @@
+{
+  "name": "@ngdpbase/hello-ngdp",
+  "version": "1.0.0",
+  "description": "Hello Ngdp addon for ngdpbase",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "ngdpbase": {
+    "slug": "hello-ngdp",
+    "type": "additive"
+  }
+}

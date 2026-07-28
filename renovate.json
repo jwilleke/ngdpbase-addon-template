@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "description": "Track the ngdpbase base image. Minor/patch may auto-merge; a major is a platform contract change and gets human review.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/jwilleke/ngdpbase"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/jwilleke/ngdpbase"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ],
+  "regexManagers": [
+    {
+      "description": "Bump the NGDPBASE_VERSION build arg in the Dockerfile",
+      "fileMatch": ["(^|/)Dockerfile$"],
+      "matchStrings": ["ARG NGDPBASE_VERSION=(?<currentValue>[0-9.]+)"],
+      "depNameTemplate": "ghcr.io/jwilleke/ngdpbase",
+      "datasourceTemplate": "docker"
+    }
+  ]
+}

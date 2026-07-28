@@ -1,0 +1,4 @@
+{
+  "ngdpbase.addons.hello-ngdp.enabled": false,
+  "ngdpbase.addons.hello-ngdp.dataPath": "./data/hello-ngdp"
+}
