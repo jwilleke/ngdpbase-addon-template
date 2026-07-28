@@ -17,7 +17,7 @@ jobs:
 
       - name: Typecheck the addon
         run: |
-          npm install --no-save typescript@^5
+          npm install --no-save typescript@^5 @types/node@^24
           npx tsc --noEmit --strict \
             --module esnext --target es2022 --moduleResolution bundler \
             addons/*/index.ts addons/*/managers/*.ts addons/*/plugins/*.ts
