@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  addon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Typecheck the addon
+        run: |
+          npm install --no-save typescript@^5
+          npx tsc --noEmit --strict \
+            --module esnext --target es2022 --moduleResolution bundler \
+            addons/*/index.ts addons/*/managers/*.ts addons/*/plugins/*.ts
+
+      # Identity is the failure this repo exists to prevent: the manifest slug
+      # and the name exported from index.ts must agree, or the addon loads
+      # under one name and is configured under another.
+      - name: Manifest slug matches exported name
+        run: |
+          for dir in addons/*/; do
+            slug=$(node -p "require('./${dir}package.json').ngdpbase.slug")
+            if ! grep -q "name: '${slug}'" "${dir}index.ts"; then
+              echo "::error::${dir}: index.ts name does not match manifest slug '${slug}'"
+              exit 1
+            fi
+            case "$slug" in
+              *-addon)
+                echo "::error::${dir}: slug '${slug}' ends in -addon; ngdpbase strips that suffix"
+                exit 1 ;;
+            esac
+          done
+
+      # A page whose filename and frontmatter uuid disagree, or whose uuid is
+      # not a real v4, is skipped silently by ngdpbase at seed time.
+      - name: Seed page UUIDs are valid and match their filenames
+        run: |
+          fail=0
+          for page in addons/*/pages/*.md; do
+            [ -e "$page" ] || continue
+            base=$(basename "$page" .md)
+            fm=$(sed -n 's/^uuid: *//p' "$page" | head -1 | tr -d "'\"")
+            if [ "$base" != "$fm" ]; then
+              echo "::error::$page: filename '$base' != frontmatter uuid '$fm'"; fail=1
+            fi
+            if ! echo "$fm" | grep -Eq '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'; then
+              echo "::error::$page: '$fm' is not a v4 UUID"; fail=1
+            fi
+          done
+          exit $fail
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build the wrapper image
+        run: docker build -t ngdpbase-addon-template:ci .

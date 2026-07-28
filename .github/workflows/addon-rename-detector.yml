@@ -1,0 +1,45 @@
+name: Addon rename detector
+
+# A partially-completed rename is the failure mode this guards. The slug is the
+# registry key AND the config key, so changing it in some places and not others
+# produces an addon that loads under one name and is configured under another —
+# which reads to an operator as "the addon is ignoring my config".
+on:
+  pull_request:
+    paths:
+      - 'addons/**'
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Detect a slug change and demand the checklist
+        run: |
+          base="origin/${{ github.base_ref }}"
+          changed=0
+
+          for dir in addons/*/; do
+            slug=$(node -p "require('./${dir}package.json').ngdpbase.slug")
+            old=$(git show "$base:${dir}package.json" 2>/dev/null \
+                  | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).ngdpbase.slug)}catch{console.log('')}})")
+            if [ -n "$old" ] && [ "$old" != "$slug" ]; then
+              echo "::warning::addon slug changed: '$old' -> '$slug'"
+              changed=1
+            fi
+          done
+
+          # A directory that vanished is the other half of a rename.
+          if git diff --name-status "$base"...HEAD -- addons/ | grep -q '^D.*package.json'; then
+            echo "::warning::an addon package.json was deleted — the other half of a rename?"
+            changed=1
+          fi
+
+          if [ "$changed" = "1" ]; then
+            echo "::error::Addon slug changed. Work through CONTRIBUTING.md § Renaming the addon and confirm every downstream consumer (instance config, deploy manifests, Dockerfile COPY paths) was updated. Remove this check only when the checklist is genuinely complete."
+            exit 1
+          fi
+          echo "No addon slug change detected."
