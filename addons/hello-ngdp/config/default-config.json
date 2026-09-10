@@ -1,4 +1,35 @@
 {
   "ngdpbase.addons.hello-ngdp.enabled": false,
-  "ngdpbase.addons.hello-ngdp.dataPath": "./data/hello-ngdp"
+  "ngdpbase.addons.hello-ngdp.dataPath": "./data/hello-ngdp",
+  "ngdpbase.permissions.definitions": {
+    "hello-ngdp-manage": {
+      "description": "Manage the Hello Ngdp addon: refresh its data and change its settings",
+      "icon": "gear",
+      "color": "#0d6efd"
+    }
+  },
+  "ngdpbase.access.policies": [
+    {
+      "id": "hello-ngdp-manage-access",
+      "name": "Hello Ngdp management",
+      "description": "Who may manage the Hello Ngdp addon",
+      "priority": 90,
+      "effect": "allow",
+      "subjects": [
+        {
+          "type": "role",
+          "value": "admin"
+        }
+      ],
+      "resources": [
+        {
+          "type": "page",
+          "pattern": "*"
+        }
+      ],
+      "actions": [
+        "hello-ngdp-manage"
+      ]
+    }
+  ]
 }
