@@ -1,5 +1,14 @@
 # ngdpbase-addon-template
 
+> __Retired.__ This template is no longer maintained. Generate a new add-on repository from an ngdpbase checkout instead:
+>
+> ```bash
+> npm run create:addon -- --id my-addon --repo
+> ```
+>
+> That writes the add-on, a wrapper `Dockerfile`, Renovate, CI and a licence, all named correctly, from the same generator ngdpbase tests. Start at the [add-ons developer guide](https://github.com/jwilleke/ngdpbase/blob/master/docs/guides/addons-developer-guide.md). See [ngdpbase#1636](https://github.com/jwilleke/ngdpbase/issues/1636).
+
+
 A working [ngdpbase](https://github.com/jwilleke/ngdpbase) addon you can copy and rename.
 
 This repository is a **reference implementation**, not a framework. Everything in
